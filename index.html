@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Family tree</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EAEFE8; --surface:#FFFFFF; --surface-2:#F4F7F2; --ink:#1B2922; --muted:#56655D;
+  --line:#CDD6CE; --line-strong:#98AA9E; --dot:#C3CEC5;
+  --accent:#2B6A4F; --accent-hover:#225840; --on-accent:#FFFFFF; --accent-soft:#DCEBE2;
+  --danger:#A23529; --danger-soft:#F6E2DF;
+  --female:#8B4B7D; --female-bg:#F3E7F0; --male:#2C6390; --male-bg:#E3EDF6;
+  --other:#86692A; --other-bg:#F3ECD9; --unknown:#6A7770; --unknown-bg:#E9EEEA;
+  --shadow:0 1px 2px rgba(27,41,34,.08), 0 8px 24px rgba(27,41,34,.08);
+  --serif:"Literata", Georgia, "Times New Roman", serif;
+  --sans:"Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#111814; --surface:#1A231E; --surface-2:#202B25; --ink:#E3EBE6; --muted:#9AAAA1;
+    --line:#2D3A33; --line-strong:#4F6458; --dot:#25312B;
+    --accent:#6BBE96; --accent-hover:#82CCA8; --on-accent:#0F1A14; --accent-soft:#1F3A2D;
+    --danger:#E58A7E; --danger-soft:#3A2220;
+    --female:#D59BC7; --female-bg:#35232F; --male:#8DB9E0; --male-bg:#1E2D3B;
+    --other:#D7B76B; --other-bg:#342D1C; --unknown:#A3B0A9; --unknown-bg:#26302B;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111814; --surface:#1A231E; --surface-2:#202B25; --ink:#E3EBE6; --muted:#9AAAA1;
+  --line:#2D3A33; --line-strong:#4F6458; --dot:#25312B;
+  --accent:#6BBE96; --accent-hover:#82CCA8; --on-accent:#0F1A14; --accent-soft:#1F3A2D;
+  --danger:#E58A7E; --danger-soft:#3A2220;
+  --female:#D59BC7; --female-bg:#35232F; --male:#8DB9E0; --male-bg:#1E2D3B;
+  --other:#D7B76B; --other-bg:#342D1C; --unknown:#A3B0A9; --unknown-bg:#26302B;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{font-family:var(--sans);font-size:15px;line-height:1.45;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none !important}
+
+/* App frame */
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
+.bar{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line);position:relative;z-index:20;flex-wrap:wrap}
+.bar>*{min-width:0}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 0}
+.brand svg{flex:none;color:var(--accent)}
+.brand h1{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:-.01em;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.views{display:flex;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;flex:none}
+.views button{border:0;background:transparent;font-size:14px;font-weight:500;color:var(--muted);padding:6px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.views button:hover{color:var(--ink)}
+.views button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.actions{display:flex;align-items:center;gap:8px;flex:1 1 0;justify-content:flex-end;position:relative}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:0;padding:4px 6px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.status:hover{color:var(--ink)}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line-strong)}
+.status[data-state="saved"]::before{background:var(--accent)}
+.status[data-state="dirty"]::before{background:var(--other)}
+.status[data-state="busy"]::before{background:var(--male);animation:pulse 1s ease-in-out infinite}
+.status[data-state="error"]::before{background:var(--danger)}
+@keyframes pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.status[data-state="busy"]::before{animation:none}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.danger{color:var(--danger);border-color:var(--line)}
+.btn.danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.icon{width:36px;padding:0}
+.btn.small{height:30px;padding:0 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.menu{position:absolute;right:0;top:calc(100% + 6px);min-width:230px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;z-index:40}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:8px;font-size:14px;cursor:pointer}
+.menu button:hover,.menu button:focus-visible{background:var(--surface-2)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
+
+@media (max-width:880px){
+  .bar{gap:10px;padding:8px 12px}
+  .views{order:3;flex:1 1 100%;max-width:100%;overflow-x:auto;scrollbar-width:none}
+  .views::-webkit-scrollbar{display:none}
+  .views button{flex:1 0 auto;padding:6px 10px}
+  .actions{flex:0 0 auto}
+  .status .label{display:none}
+  .add-label{display:none}
+}
+
+/* Stage */
+.stage{position:relative;overflow:hidden;min-height:0}
+.view{position:absolute;inset:0;overflow:auto}
+.cv{position:absolute;inset:0}
+.canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;
+  background-image:radial-gradient(circle, var(--dot) 1.2px, transparent 1.4px);background-size:24px 24px}
+.canvas.dragging{cursor:grabbing}
+.vbar{position:absolute;top:14px;left:14px;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 8px 6px 12px;box-shadow:var(--shadow);max-width:calc(100% - 28px);font-size:14px;color:var(--muted)}
+.vbar select{height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);padding:0 8px;max-width:240px;color:var(--ink)}
+.zoom{position:absolute;right:14px;bottom:14px;z-index:5;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.zoom button{width:40px;height:40px;border:0;background:none;font-size:18px;cursor:pointer;color:var(--ink)}
+.zoom button+button{border-top:1px solid var(--line)}
+.zoom button:hover{background:var(--surface-2)}
+.zoom button.fit{font-size:12px;font-weight:600}
+.stage.drawer-open .zoom{right:394px}
+@media (max-width:720px){.stage.drawer-open .zoom{display:none}}
+
+/* Tree nodes */
+.node{cursor:pointer}
+.node .card{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.node.dec .card{fill:var(--surface-2)}
+.node:hover .card{stroke:var(--line-strong)}
+.node.rel .card{stroke:var(--accent);stroke-opacity:.55;stroke-width:1.5}
+.node.sel .card{stroke:var(--accent);stroke-width:2.5;stroke-opacity:1}
+.node:focus{outline:none}
+.node:focus-visible .card{stroke:var(--accent);stroke-width:3;stroke-dasharray:5 3}
+.nm{font-family:var(--serif);font-weight:600;font-size:14.5px;fill:var(--ink)}
+.sub{font-family:var(--sans);font-size:12px;fill:var(--muted)}
+.av{stroke-width:1.5}
+.av-t{font-family:var(--sans);font-weight:600;font-size:14px;text-anchor:middle;dominant-baseline:central}
+.ring{fill:none;stroke-width:2}
+.g-female .av{fill:var(--female-bg);stroke:var(--female)} .g-female .av-t{fill:var(--female)} .g-female .ring{stroke:var(--female)}
+.g-male .av{fill:var(--male-bg);stroke:var(--male)} .g-male .av-t{fill:var(--male)} .g-male .ring{stroke:var(--male)}
+.g-other .av{fill:var(--other-bg);stroke:var(--other)} .g-other .av-t{fill:var(--other)} .g-other .ring{stroke:var(--other)}
+.g-unknown .av{fill:var(--unknown-bg);stroke:var(--unknown)} .g-unknown .av-t{fill:var(--unknown)} .g-unknown .ring{stroke:var(--unknown)}
+.edge{fill:none;stroke:var(--line-strong);stroke-width:1.5;stroke-linejoin:round}
+.edge.hl{stroke:var(--accent);stroke-width:2.2}
+.pedge{fill:none;stroke:var(--accent);stroke-width:2;stroke-opacity:.5}
+.pedge.hl{stroke-opacity:1}
+.ghost{cursor:pointer}
+.ghost rect{fill:transparent;stroke:var(--line-strong);stroke-width:1.5;stroke-dasharray:6 5}
+.ghost:hover rect,.ghost:focus-visible rect{stroke:var(--accent);fill:var(--accent-soft)}
+.ghost:focus{outline:none}
+.gh-t{font-family:var(--sans);font-size:13.5px;font-weight:500;fill:var(--accent);text-anchor:middle;dominant-baseline:central}
+.gen-label{font-family:var(--serif);font-size:13px;fill:var(--muted);font-style:italic}
+
+/* Empty / welcome */
+.welcome{min-height:100%;display:grid;place-items:center;padding:32px 20px}
+.welcome-inner{max-width:560px}
+.welcome h2{font-family:var(--serif);font-weight:600;font-size:clamp(28px,5vw,40px);line-height:1.15;letter-spacing:-.015em;margin:0 0 14px}
+.welcome p{color:var(--muted);font-size:16px;margin:0 0 24px;max-width:60ch}
+.welcome .row{display:flex;gap:10px;flex-wrap:wrap}
+.sprig{display:block;margin-bottom:20px;color:var(--accent)}
+
+/* Timeline */
+.tl{padding:16px 0 40px}
+.tl-grid{position:relative;min-width:max-content}
+.tl-axis,.tl-row{display:grid;grid-template-columns:210px var(--tw)}
+.tl-axis{position:sticky;top:0;z-index:3;background:var(--paper)}
+.tl-axis .corner{position:sticky;left:0;background:var(--paper);z-index:2}
+.tl-ticks{position:relative;height:34px;border-bottom:1px solid var(--line)}
+.tl-ticks span{position:absolute;bottom:6px;transform:translateX(-50%);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tl-row{min-height:40px}
+.tl-name{position:sticky;left:0;z-index:2;background:var(--paper);border:0;text-align:left;padding:0 12px 0 20px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line)}
+.tl-name b{font-family:var(--serif);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-name:hover b{color:var(--accent)}
+.tl-row.sel .tl-name b{color:var(--accent)}
+.tl-track{position:relative;background-image:repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px var(--dec));background-position:0 0}
+.tl-bar{position:absolute;top:9px;height:22px;border-radius:11px;border:1.5px solid;font-size:12px;line-height:19px;padding:0 9px;white-space:nowrap;overflow:hidden;cursor:pointer;font-variant-numeric:tabular-nums}
+.tl-bar.g-female{background:var(--female-bg);border-color:var(--female);color:var(--female)}
+.tl-bar.g-male{background:var(--male-bg);border-color:var(--male);color:var(--male)}
+.tl-bar.g-other{background:var(--other-bg);border-color:var(--other);color:var(--other)}
+.tl-bar.g-unknown{background:var(--unknown-bg);border-color:var(--unknown);color:var(--unknown)}
+.tl-bar.living{border-right-style:dashed;border-top-right-radius:0;border-bottom-right-radius:0}
+.tl-bar.unknown-end{border-right-style:dotted}
+.tl-row.sel .tl-bar{box-shadow:0 0 0 2px var(--accent)}
+.tl-now{position:absolute;top:34px;bottom:0;width:0;border-left:1.5px dashed var(--accent);z-index:1;pointer-events:none}
+.tl-undated{margin:28px 20px 0;color:var(--muted);font-size:14px;max-width:70ch}
+.tl-undated button{border:0;background:none;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+
+/* People */
+.people{padding:24px 20px 40px;max-width:1200px;margin:0 auto}
+.people-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.people-head input,.people-head select{height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:0 12px}
+.people-head input{flex:1 1 220px;min-width:0}
+.people-head .count{color:var(--muted);font-size:14px;margin-left:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.pcard{display:flex;gap:12px;align-items:center;text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;min-width:0}
+.pcard:hover{border-color:var(--line-strong)}
+.pcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.pcard .meta{min-width:0}
+.pcard .meta b{display:block;font-family:var(--serif);font-weight:600;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .meta>span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.none{color:var(--muted);padding:24px 0}
+
+/* Avatars (HTML) */
+.avatar{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:15px;border:1.5px solid;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.sm{width:28px;height:28px;font-size:11px;border-width:1px}
+.avatar.lg{width:96px;height:96px;font-size:30px;border-width:2px}
+.avatar.g-female{background:var(--female-bg);border-color:var(--female);color:var(--female)}
+.avatar.g-male{background:var(--male-bg);border-color:var(--male);color:var(--male)}
+.avatar.g-other{background:var(--other-bg);border-color:var(--other);color:var(--other)}
+.avatar.g-unknown{background:var(--unknown-bg);border-color:var(--unknown);color:var(--unknown)}
+
+/* Drawer */
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(380px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);overflow-y:auto;z-index:10;padding:18px 22px 28px}
+@media (max-width:720px){
+  .drawer{top:auto;width:100%;max-height:72%;border-left:0;border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:no-preference){
+  .drawer{animation:slideIn .18s ease-out}
+  @keyframes slideIn{from{transform:translateX(16px);opacity:0}}
+  @media (max-width:720px){@keyframes slideIn{from{transform:translateY(16px);opacity:0}}}
+}
+.dr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.dr-name{font-family:var(--serif);font-weight:600;font-size:25px;line-height:1.2;letter-spacing:-.01em;margin:14px 0 2px}
+.dr-born{color:var(--muted);margin:0;font-size:14px}
+.dr-life{margin:6px 0 0;font-size:15px;font-variant-numeric:tabular-nums}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:18px 0 0;font-size:14px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.notes{margin:16px 0 0;padding:12px 14px;background:var(--surface-2);border-radius:10px;font-family:var(--serif);font-size:14.5px;line-height:1.6;white-space:pre-wrap}
+.rels{margin-top:22px;display:grid;gap:16px}
+.rels h3{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px}
+.chips{display:flex;flex-direction:column;gap:4px}
+.chip{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:5px 6px;border-radius:9px;cursor:pointer}
+.chip:hover{background:var(--surface-2)}
+.chip .cn{font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip small{color:var(--muted);font-variant-numeric:tabular-nums}
+.empty-rel{font-size:14px;color:var(--muted);margin:0}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:22px}
+.dr-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+
+/* Dialogs */
+dialog{border:0;padding:0;border-radius:16px;background:var(--surface);color:var(--ink);box-shadow:0 24px 64px rgba(0,0,0,.25);width:min(620px,calc(100% - 24px));max-height:calc(100% - 24px)}
+dialog::backdrop{background:rgba(15,24,19,.45)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 24px)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px 12px;border-bottom:1px solid var(--line)}
+.dlg-head h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0}
+.dlg-body{padding:18px 22px;overflow-y:auto;display:grid;gap:16px}
+.dlg-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+.dlg-foot .err{margin-right:auto;color:var(--danger);font-size:14px}
+.field{display:grid;gap:5px}
+.field>span,.legend{font-size:13.5px;font-weight:500}
+.field small,.hint{color:var(--muted);font-size:12.5px}
+.field input[type=text],.field input[type=password],.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:9px 11px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);outline:2px solid var(--accent-soft);outline-offset:0}
+.field textarea{min-height:96px;resize:vertical;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.row2{grid-template-columns:1fr}}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.seg label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;cursor:pointer}
+.seg input{accent-color:var(--accent);margin:0}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.photo-field{display:flex;align-items:center;gap:14px}
+.photo-field .btns{display:flex;gap:6px;flex-wrap:wrap}
+.section-title{font-family:var(--serif);font-weight:600;font-size:16px;margin:6px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+.relpick{display:grid;gap:6px}
+.relpick .sel-list{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:3px 4px 3px 10px;font-size:13.5px}
+.tag button{border:0;background:none;width:22px;height:22px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:15px;line-height:1}
+.tag button:hover{background:var(--danger-soft);color:var(--danger)}
+.relpick select{width:100%;height:36px;border:1px dashed var(--line-strong);border-radius:9px;background:var(--surface);padding:0 10px;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--surface-2)}
+details summary{cursor:pointer;font-weight:500;font-size:14px}
+details ol{margin:10px 0 2px;padding-left:20px;font-size:14px;line-height:1.6}
+details code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--surface);padding:1px 5px;border-radius:5px;border:1px solid var(--line)}
+.storage-state{font-size:14px;padding:10px 12px;border-radius:10px;background:var(--accent-soft)}
+.confirm-body{font-size:15px;color:var(--ink);margin:0;white-space:pre-line}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:var(--shadow);z-index:100;max-width:calc(100% - 32px)}
+.toast.error{background:var(--danger);color:#fff}
+
+@media print{
+  .bar,.zoom,.vbar,.drawer{display:none !important}
+  .app{display:block}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 24V13M13 13c0-4 3-6.5 7-7-0.5 4-3 7-7 7Zm0 0C13 9 10 6.5 6 6c0.5 4 3 7 7 7Zm0 3.5c-2.5 0-4.5-1.5-5-4m5 4c2.5 0 4.5-1.5 5-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h1 id="familyTitle">Family tree</h1>
+    </div>
+    <nav class="views" role="tablist" aria-label="Views">
+      <button role="tab" data-view="tree">Family tree</button>
+      <button role="tab" data-view="ancestors">Ancestors</button>
+      <button role="tab" data-view="descendants">Descendants</button>
+      <button role="tab" data-view="timeline">Timeline</button>
+      <button role="tab" data-view="people">People</button>
+    </nav>
+    <div class="actions">
+      <button id="syncStatus" class="status" type="button" data-state="idle"><span class="label">Saved in this browser</span></button>
+      <button id="saveBtn" class="btn small" type="button" hidden>Save now</button>
+      <button id="addBtn" class="btn primary" type="button" aria-label="Add person"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="add-label">Add person</span></button>
+      <button id="menuBtn" class="btn icon" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="More options"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="4" cy="9" r="1.6" fill="currentColor"/><circle cx="9" cy="9" r="1.6" fill="currentColor"/><circle cx="14" cy="9" r="1.6" fill="currentColor"/></svg></button>
+      <div id="menu" class="menu" role="menu" hidden>
+        <button role="menuitem" data-menu="settings">Settings and storage</button>
+        <button role="menuitem" data-menu="export">Download backup (JSON)</button>
+        <button role="menuitem" data-menu="import">Import from backup…</button>
+        <hr>
+        <button role="menuitem" data-menu="sample">Load sample family</button>
+        <button role="menuitem" data-menu="print">Print this view</button>
+      </div>
+    </div>
+  </header>
+  <main class="stage" id="stage">
+    <section id="view" class="view" aria-live="off"></section>
+    <div class="zoom" id="zoomCtl" hidden>
+      <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+      <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+      <button type="button" data-zoom="fit" class="fit" aria-label="Fit to screen">Fit</button>
+    </div>
+    <aside id="drawer" class="drawer" hidden aria-label="Person details"></aside>
+  </main>
+</div>
+
+<!-- Person editor -->
+<dialog id="personDlg" aria-labelledby="pdTitle">
+  <form id="personForm" class="dlg" novalidate>
+    <div class="dlg-head">
+      <h2 id="pdTitle">Add person</h2>
+      <button type="button" class="btn icon ghost" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="photo-field">
+        <div id="photoPreview"></div>
+        <div>
+          <div class="btns">
+            <label class="btn small" tabindex="0" id="photoPick">Upload photo<input type="file" id="photoInput" accept="image/*" hidden></label>
+            <button type="button" class="btn small ghost" id="photoRemove">Remove photo</button>
+          </div>
+          <p class="hint" style="margin:6px 0 0">Cropped to a small square so the tree stays quick to load.</p>
+        </div>
+      </div>
+      <div class="row2">
+        <label class="field"><span>First name(s)</span><input type="text" name="firstName" autocomplete="off"></label>
+        <label class="field"><span>Last name</span><input type="text" name="lastName" autocomplete="off"></label>
+      </div>
+      <label class="field"><span>Surname at birth</span><input type="text" name="birthName" autocomplete="off"><small>Only if it was different, e.g. before marriage.</small></label>
+      <fieldset>
+        <span class="legend">Shown as</span>
+        <div class="seg">
+          <label><input type="radio" name="gender" value="female"> Female</label>
+          <label><input type="radio" name="gender" value="male"> Male</label>
+          <label><input type="radio" name="gender" value="other"> Other</label>
+          <label><input type="radio" name="gender" value="unknown"> Not set</label>
+        </div>
+      </fieldset>
+      <div class="row2">
+        <label class="field"><span>Born</span><input type="text" name="birthDate" placeholder="1948 or 1948-06-14" inputmode="numeric" autocomplete="off"></label>
+        <label class="field"><span>Birthplace</span><input type="text" name="birthPlace" autocomplete="off"></label>
+      </div>
+      <label class="check"><input type="checkbox" name="deceased"> This person has died</label>
+      <div class="row2" id="deathRow">
+        <label class="field"><span>Died</span><input type="text" name="deathDate" placeholder="1994 or 1994-11-20" inputmode="numeric" autocomplete="off"></label>
+        <label class="field"><span>Place of death</span><input type="text" name="deathPlace" autocomplete="off"></label>
+      </div>
+      <label class="field"><span>Occupation</span><input type="text" name="occupation" autocomplete="off"></label>
+      <label class="field"><span>Story and notes</span><textarea name="notes" placeholder="Memories, how they met, where they lived…"></textarea></label>
+
+      <h3 class="section-title">Relationships</h3>
+      <div class="relpick" id="rel-parents"></div>
+      <div class="relpick" id="rel-partners"></div>
+      <div class="relpick" id="rel-children"></div>
+    </div>
+    <div class="dlg-foot">
+      <span class="err" id="pdErr" role="alert"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save person</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Settings -->
+<dialog id="settingsDlg" aria-labelledby="stTitle">
+  <form id="settingsForm" class="dlg" novalidate>
+    <div class="dlg-head">
+      <h2 id="stTitle">Settings and storage</h2>
+      <button type="button" class="btn icon ghost" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="dlg-body">
+      <label class="field"><span>Family name</span><input type="text" name="title" autocomplete="off" placeholder="The Band family"></label>
+      <label class="field"><span>Appearance</span>
+        <select name="theme"><option value="system">Match my device</option><option value="light">Light</option><option value="dark">Dark</option></select>
+      </label>
+      <h3 class="section-title">Where your tree is saved</h3>
+      <div class="storage-state" id="storageState"></div>
+      <p class="hint" style="margin:0">Connect a private GitHub repository to keep the tree off this page’s public code. The app reads and writes one JSON file in that repo using a token you paste here. The token is stored only in this browser.</p>
+      <div class="row2">
+        <label class="field"><span>GitHub username</span><input type="text" name="owner" autocomplete="username" spellcheck="false"></label>
+        <label class="field"><span>Private data repo</span><input type="text" name="repo" placeholder="family-tree-data" spellcheck="false"></label>
+      </div>
+      <div class="row2">
+        <label class="field"><span>Branch</span><input type="text" name="branch" placeholder="main" spellcheck="false"></label>
+        <label class="field"><span>File path</span><input type="text" name="path" placeholder="family.json" spellcheck="false"></label>
+      </div>
+      <label class="field"><span>Access token</span><input type="password" name="token" autocomplete="current-password" spellcheck="false" placeholder="github_pat_…"></label>
+      <label class="check"><input type="checkbox" name="autosave"> Save to GitHub automatically a few seconds after each change</label>
+      <details>
+        <summary>How to create the token</summary>
+        <ol>
+          <li>On GitHub, go to Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token.</li>
+          <li>Repository access: <b>Only select repositories</b>, and pick your private data repo.</li>
+          <li>Permissions → Repository permissions → <b>Contents: Read and write</b>. Nothing else is needed.</li>
+          <li>Generate it, copy it, and paste it above. Keep a copy in your password manager for other devices.</li>
+        </ol>
+      </details>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn primary" id="ghConnect">Connect and load</button>
+        <button type="button" class="btn danger" id="ghDisconnect">Sign out on this device</button>
+      </div>
+      <p class="err" id="stErr" role="alert" style="color:var(--danger);margin:0;font-size:14px"></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="submit" class="btn primary">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Confirm -->
+<dialog id="askDlg" aria-labelledby="askTitle">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="askTitle"></h2></div>
+    <div class="dlg-body"><p class="confirm-body" id="askBody"></p></div>
+    <div class="dlg-foot" id="askBtns"></div>
+  </div>
+</dialog>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- small helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const LS = { data:'ft.data.v1', gh:'ft.github.v1', dirty:'ft.dirty.v1', sha:'ft.sha.v1', ui:'ft.ui.v1' };
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); return true; } catch { return false; } },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+const readJSON = k => { try { return JSON.parse(store.get(k) || 'null'); } catch { return null; } };
+
+/* ---------- state ---------- */
+const VIEWS = ['tree','ancestors','descendants','timeline','people'];
+let data = emptyData();
+let byId = new Map(), kidsOf = new Map();
+const ui = { view:'tree', selected:null, transforms:{}, focus:{}, search:'', sort:'name', filter:'all', theme:'system' };
+let gh = null;          // { owner, repo, branch, path, token, autosave }
+let ghSha = null;
+let dirty = false, rev = 0, saving = false, saveTimer = null, lastSaved = null, syncError = null, loading = false;
+let canvas = null;
+
+function emptyData(){ return { version:1, meta:{ title:'Our family', homeId:null, updated:null }, people:[] }; }
+
+function normalise(d){
+  if (!d || typeof d !== 'object' || !Array.isArray(d.people)) throw new Error('That file isn’t a family tree backup.');
+  const out = { version:1, meta:Object.assign({ title:'Our family', homeId:null, updated:null }, d.meta || {}), people:[] };
+  const seen = new Set();
+  for (const p of d.people) {
+    if (!p || p.id == null || seen.has(String(p.id))) continue;
+    const id = String(p.id); seen.add(id);
+    out.people.push({
+      id,
+      firstName:String(p.firstName || ''), lastName:String(p.lastName || ''), birthName:String(p.birthName || ''),
+      gender:['female','male','other'].includes(p.gender) ? p.gender : 'unknown',
+      birthDate:String(p.birthDate || ''), birthPlace:String(p.birthPlace || ''),
+      deathDate:String(p.deathDate || ''), deathPlace:String(p.deathPlace || ''),
+      deceased:!!(p.deceased || p.deathDate),
+      occupation:String(p.occupation || ''), notes:String(p.notes || ''),
+      photo:typeof p.photo === 'string' && p.photo.startsWith('data:image/') ? p.photo : '',
+      parents:Array.isArray(p.parents) ? p.parents.map(String) : [],
+      partners:Array.isArray(p.partners) ? p.partners.map(String) : []
+    });
+  }
+  for (const p of out.people) {
+    p.parents = [...new Set(p.parents)].filter(x => x !== p.id && seen.has(x)).slice(0, 2);
+    p.partners = [...new Set(p.partners)].filter(x => x !== p.id && seen.has(x));
+  }
+  const map = new Map(out.people.map(p => [p.id, p]));
+  for (const p of out.people) for (const s of p.partners) { const o = map.get(s); if (!o.partners.includes(p.id)) o.partners.push(p.id); }
+  if (out.meta.homeId && !map.has(out.meta.homeId)) out.meta.homeId = null;
+  return out;
+}
+
+function reindex(){
+  byId = new Map(data.people.map(p => [p.id, p]));
+  kidsOf = new Map(data.people.map(p => [p.id, []]));
+  for (const p of data.people) for (const q of p.parents) kidsOf.get(q)?.push(p.id);
+  for (const arr of kidsOf.values()) arr.sort((a, b) => byBirth(byId.get(a), byId.get(b)));
+}
+
+/* ---------- people helpers ---------- */
+const yearOf = s => { const m = String(s || '').match(/\d{4}/); return m ? +m[0] : null; };
+function byBirth(a, b){
+  const ya = yearOf(a.birthDate), yb = yearOf(b.birthDate);
+  if (ya == null && yb == null) return 0;
+  if (ya == null) return 1;
+  if (yb == null) return -1;
+  return ya - yb || a.birthDate.localeCompare(b.birthDate);
+}
+const byName = (a, b) => (a.lastName || '').localeCompare(b.lastName || '') || (a.firstName || '').localeCompare(b.firstName || '');
+const fullName = p => [p.firstName, p.lastName].filter(Boolean).join(' ').trim() || 'Unnamed';
+const initials = p => (((p.firstName || '').trim().charAt(0)) + ((p.lastName || '').trim().charAt(0))).toUpperCase() || '?';
+const gClass = p => 'g-' + (p.gender || 'unknown');
+function lifespan(p){
+  const b = yearOf(p.birthDate), d = yearOf(p.deathDate);
+  if (b && d) return `${b}–${d}`;
+  if (b && p.deceased) return `${b}–?`;
+  if (b) return `Born ${b}`;
+  if (d) return `Died ${d}`;
+  return p.deceased ? 'Deceased' : '';
+}
+function prettyDate(s){
+  const m = String(s || '').match(/^(\d{4})-(\d{2})(?:-(\d{2}))?$/);
+  if (!m) return s;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, m[3] ? +m[3] : 1));
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString('en-GB', m[3] ? { day:'numeric', month:'long', year:'numeric', timeZone:'UTC' } : { month:'long', year:'numeric', timeZone:'UTC' });
+}
+function siblingsOf(id){
+  const p = byId.get(id); if (!p || !p.parents.length) return [];
+  const s = new Set();
+  for (const q of p.parents) for (const k of kidsOf.get(q) || []) if (k !== id) s.add(k);
+  return [...s].sort((a, b) => byBirth(byId.get(a), byId.get(b)));
+}
+function ancestorsOf(ids){
+  const out = new Set(), stack = [...ids];
+  while (stack.length) { const id = stack.pop(); if (out.has(id)) continue; out.add(id); const p = byId.get(id); if (p) stack.push(...p.parents); }
+  return out;
+}
+function descendantsOf(ids){
+  const out = new Set(), stack = [...ids];
+  while (stack.length) { const id = stack.pop(); if (out.has(id)) continue; out.add(id); stack.push(...(kidsOf.get(id) || [])); }
+  return out;
+}
+function relatedSet(id){
+  const p = id && byId.get(id); if (!p) return new Set();
+  return new Set([...p.parents, ...p.partners, ...(kidsOf.get(id) || [])]);
+}
+function sortedPeople(){ return [...data.people].sort(byName); }
+function personOptions(selectedId){
+  return sortedPeople().map(p => `<option value="${esc(p.id)}"${p.id === selectedId ? ' selected' : ''}>${esc(fullName(p))}${lifespan(p) ? ' (' + esc(lifespan(p)) + ')' : ''}</option>`).join('');
+}
+function avatarHtml(p, size = ''){
+  return `<span class="avatar ${size} ${gClass(p)}" aria-hidden="true">${p.photo ? `<img src="${esc(p.photo)}" alt="">` : esc(initials(p))}</span>`;
+}
+
+/* text measuring for SVG labels */
+const mctx = document.createElement('canvas').getContext('2d');
+function fitText(s, font, max){
+  mctx.font = font;
+  if (mctx.measureText(s).width <= max) return s;
+  let lo = 0, hi = s.length;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (mctx.measureText(s.slice(0, mid) + '…').width <= max) lo = mid; else hi = mid - 1; }
+  return s.slice(0, lo).trimEnd() + '…';
+}
+
+/* ---------- persistence ---------- */
+function persistLocal(){
+  const ok = store.set(LS.data, JSON.stringify(data));
+  store.set(LS.dirty, dirty ? '1' : '');
+  if (ghSha) store.set(LS.sha, ghSha); else store.del(LS.sha);
+  if (!ok) toast('This browser’s storage is full. Download a backup, or connect GitHub storage.', true);
+}
+function commit(){
+  data.meta.updated = new Date().toISOString();
+  dirty = true; rev++;
+  persistLocal(); reindex(); render(); updateStatus();
+  if (gh?.token && gh.autosave) { clearTimeout(saveTimer); saveTimer = setTimeout(ghSave, 2500); }
+}
+
+/* ---------- GitHub storage ---------- */
+function b64encode(str){
+  const bytes = new TextEncoder().encode(str); let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function b64decode(b64){
+  const bin = atob(b64.replace(/\s/g, '')); const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+const repoUrl = c => `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`;
+const fileUrl = c => `${repoUrl(c)}/contents/${c.path.split('/').filter(Boolean).map(encodeURIComponent).join('/')}`;
+const ghHeaders = (c, accept = 'application/vnd.github+json') => ({ Authorization:'Bearer ' + c.token, Accept:accept });
+function ghError(status, c){
+  if (status === 401) return new Error('GitHub didn’t accept the token. Check it hasn’t expired and was copied in full.');
+  if (status === 403) return new Error('The token can’t access this repo. Give it “Contents: Read and write” for ' + c.repo + '.');
+  if (status === 404) return new Error(`Couldn’t find ${c.owner}/${c.repo} (or branch “${c.branch}”). Check the spelling, and that the token includes this repo.`);
+  return new Error(`GitHub returned an error (${status}). Try again in a moment.`);
+}
+async function ghRequest(url, opts, c){
+  try { return await fetch(url, opts); }
+  catch { throw new Error('Couldn’t reach GitHub. Check your connection and try again.'); }
+}
+async function ghFetch(c){
+  const r = await ghRequest(`${fileUrl(c)}?ref=${encodeURIComponent(c.branch)}`, { headers:ghHeaders(c), cache:'no-store' }, c);
+  if (r.status === 404) {
+    const rr = await ghRequest(repoUrl(c), { headers:ghHeaders(c), cache:'no-store' }, c);
+    if (!rr.ok) throw ghError(rr.status, c);
+    return { data:null, sha:null };
+  }
+  if (!r.ok) throw ghError(r.status, c);
+  const j = await r.json();
+  if (Array.isArray(j)) throw new Error(`“${c.path}” is a folder in the repo. Use a file path like family.json.`);
+  let text;
+  if (j.content && j.encoding === 'base64') text = b64decode(j.content);
+  else {
+    const r2 = await ghRequest(`${fileUrl(c)}?ref=${encodeURIComponent(c.branch)}`, { headers:ghHeaders(c, 'application/vnd.github.raw+json'), cache:'no-store' }, c);
+    if (!r2.ok) throw ghError(r2.status, c);
+    text = await r2.text();
+  }
+  let parsed;
+  try { parsed = JSON.parse(text); } catch { throw new Error(`“${c.path}” in the repo isn’t valid JSON.`); }
+  return { data:normalise(parsed), sha:j.sha };
+}
+async function ghPut(c, sha){
+  const body = { message:`Update family tree (${data.people.length} ${data.people.length === 1 ? 'person' : 'people'})`, content:b64encode(JSON.stringify(data, null, 2)), branch:c.branch };
+  if (sha) body.sha = sha;
+  return ghRequest(fileUrl(c), { method:'PUT', headers:{ ...ghHeaders(c), 'Content-Type':'application/json' }, body:JSON.stringify(body) }, c);
+}
+async function ghSave(){
+  clearTimeout(saveTimer);
+  if (!gh?.token) return;
+  if (saving) { saveTimer = setTimeout(ghSave, 1500); return; }
+  saving = true; syncError = null; updateStatus();
+  const startRev = rev;
+  try {
+    const r = await ghPut(gh, ghSha);
+    if (r.status === 409 || r.status === 422) { saving = false; await resolveConflict(); return; }
+    if (!r.ok) throw ghError(r.status, gh);
+    const j = await r.json();
+    ghSha = j.content?.sha || ghSha;
+    lastSaved = new Date();
+    if (rev === startRev) dirty = false;
+    persistLocal();
+  } catch (e) {
+    syncError = e.message; toast(e.message, true);
+  } finally {
+    saving = false; updateStatus();
+    if (dirty && !syncError && gh?.autosave && rev !== startRev) saveTimer = setTimeout(ghSave, 2000);
+  }
+}
+async function resolveConflict(){
+  updateStatus();
+  const choice = await ask('The tree changed on GitHub',
+    'The file on GitHub was updated somewhere else (another device or tab) since this page loaded it.\n\nYou can replace it with what’s on this screen, or load GitHub’s version and lose the changes made here.',
+    [{ label:'Load GitHub’s version', value:'load' }, { label:'Replace with mine', value:'mine', kind:'primary' }]);
+  if (choice === 'mine') {
+    try { const cur = await ghFetch(gh); ghSha = cur.sha; await ghSave(); }
+    catch (e) { syncError = e.message; toast(e.message, true); updateStatus(); }
+  } else if (choice === 'load') {
+    await ghLoad(true);
+  } else { syncError = 'Not saved'; updateStatus(); }
+}
+async function ghLoad(force = false){
+  if (!gh?.token) return;
+  loading = true; syncError = null; updateStatus();
+  try {
+    const res = await ghFetch(gh);
+    if (res.data) {
+      data = res.data; ghSha = res.sha; dirty = false; lastSaved = new Date();
+    } else {
+      ghSha = null;
+      if (data.people.length) { dirty = true; toast('No tree in the repo yet. Saving this one there now.'); loading = false; persistLocal(); reindex(); render(); await ghSave(); return; }
+    }
+    persistLocal(); reindex();
+    if (ui.selected && !byId.has(ui.selected)) ui.selected = null;
+    render();
+    if (force) toast('Loaded the latest version from GitHub.');
+  } catch (e) {
+    syncError = e.message; toast(e.message, true);
+  } finally { loading = false; updateStatus(); }
+}
+
+function updateStatus(){
+  const el = $('#syncStatus'), label = el.querySelector('.label'), saveBtn = $('#saveBtn');
+  let state = 'saved', text = 'Saved in this browser';
+  if (gh?.token) {
+    if (loading) { state = 'busy'; text = 'Loading from GitHub…'; }
+    else if (saving) { state = 'busy'; text = 'Saving to GitHub…'; }
+    else if (syncError) { state = 'error'; text = 'Not saved to GitHub'; }
+    else if (dirty) { state = 'dirty'; text = 'Unsaved changes'; }
+    else { text = lastSaved ? `Saved to GitHub ${lastSaved.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}` : 'Synced with GitHub'; }
+    saveBtn.hidden = !(dirty || syncError) || saving || loading;
+    saveBtn.textContent = syncError ? 'Try again' : 'Save now';
+  } else {
+    state = 'idle'; saveBtn.hidden = true;
+  }
+  el.dataset.state = state; label.textContent = text; el.title = syncError || text; el.setAttribute('aria-label', text + '. Open storage settings');
+}
+
+/* ---------- generation-based layout for the full tree ---------- */
+const NW = 204, NH = 64, PGAP = 28, UGAP = 44, VH = 150, AX = NW + 70, SH = NH + 18;
+
+function computeGenerations(){
+  const P = data.people, gen = Object.create(null);
+  P.forEach(p => gen[p.id] = 0);
+  for (let it = 0; it < 80; it++) {
+    let ch = false;
+    for (const p of P) {
+      for (const q of p.parents) if (gen[p.id] < gen[q] + 1) { gen[p.id] = gen[q] + 1; ch = true; }
+      for (const s of p.partners) if (gen[s] !== gen[p.id]) { const m = Math.max(gen[s], gen[p.id]); gen[s] = gen[p.id] = m; ch = true; }
+      const ks = kidsOf.get(p.id) || [];
+      if (ks.length) {
+        const mk = Math.min(...ks.map(k => gen[k]));
+        if (gen[p.id] < mk - 1 && p.parents.every(q => gen[q] <= mk - 2)) { gen[p.id] = mk - 1; ch = true; }
+      }
+    }
+    if (!ch) break;
+  }
+  const min = Math.min(...Object.values(gen));
+  for (const k in gen) gen[k] -= min;
+  return gen;
+}
+
+function layoutTree(){
+  const P = data.people, gen = computeGenerations();
+  // group partners in the same generation into "units"
+  const parent = new Map(P.map(p => [p.id, p.id]));
+  const find = a => { while (parent.get(a) !== a) { parent.set(a, parent.get(parent.get(a))); a = parent.get(a); } return a; };
+  for (const p of P) for (const s of p.partners) if (gen[s] === gen[p.id]) { const ra = find(p.id), rb = find(s); if (ra !== rb) parent.set(ra, rb); }
+  const groups = new Map();
+  for (const p of P) { const r = find(p.id); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(p.id); }
+  const units = [], unitOf = new Map();
+  for (const members of groups.values()) {
+    let ordered = members;
+    if (members.length > 2) {
+      const s = [...members].sort((a, b) => byId.get(b).partners.length - byId.get(a).partners.length);
+      const rest = s.slice(1);
+      ordered = [...rest.filter((_, i) => i % 2 === 0).reverse(), s[0], ...rest.filter((_, i) => i % 2 === 1)];
+    }
+    const u = { members:ordered, gen:gen[ordered[0]], x:0, w:ordered.length * NW + (ordered.length - 1) * PGAP };
+    units.push(u); ordered.forEach(id => unitOf.set(id, u));
+  }
+  // initial order: depth-first from the oldest families
+  const rows = new Map(), seen = new Set();
+  const visit = u => {
+    if (seen.has(u)) return; seen.add(u);
+    if (!rows.has(u.gen)) rows.set(u.gen, []);
+    rows.get(u.gen).push(u);
+    const kids = [];
+    for (const m of u.members) for (const k of kidsOf.get(m) || []) if (!kids.includes(k)) kids.push(k);
+    kids.sort((a, b) => byBirth(byId.get(a), byId.get(b)));
+    for (const k of kids) visit(unitOf.get(k));
+  };
+  const hasParents = u => u.members.some(m => byId.get(m).parents.length);
+  [...units].sort((a, b) => a.gen - b.gen).forEach(u => { if (!hasParents(u)) visit(u); });
+  units.forEach(visit);
+  const gens = [...rows.keys()].sort((a, b) => a - b);
+  for (const g of gens) { let x = 0; for (const u of rows.get(g)) { u.x = x; x += u.w + UGAP; } }
+
+  const off = (u, id) => u.members.indexOf(id) * (NW + PGAP) + NW / 2;
+  const px = id => { const u = unitOf.get(id); return u.x + off(u, id); };
+  const center = u => u.x + u.w / 2;
+  const wantDown = u => {
+    const v = [];
+    for (const m of u.members) { const ps = byId.get(m).parents; if (ps.length) v.push(mean(ps.map(px)) - off(u, m) + u.w / 2); }
+    return v.length ? mean(v) : center(u);
+  };
+  const wantUp = u => {
+    const v = [], done = new Set();
+    for (const m of u.members) for (const k of kidsOf.get(m) || []) {
+      if (done.has(k)) continue; done.add(k);
+      const inU = byId.get(k).parents.filter(q => unitOf.get(q) === u);
+      v.push(px(k) - mean(inU.map(q => off(u, q))) + u.w / 2);
+    }
+    return v.length ? mean(v) : center(u);
+  };
+  const placeRow = (row, want) => {
+    const order = row.map((u, i) => ({ u, d:want(u), i })).sort((a, b) => a.d - b.d || a.i - b.i);
+    const n = order.length, xf = [], xb = [];
+    let prev = -Infinity;
+    for (let i = 0; i < n; i++) { const o = order[i]; let x = o.d - o.u.w / 2; if (x < prev + UGAP) x = prev + UGAP; xf[i] = x; prev = x + o.u.w; }
+    let next = Infinity;
+    for (let i = n - 1; i >= 0; i--) { const o = order[i]; let x = o.d - o.u.w / 2; if (x + o.u.w > next - UGAP) x = next - UGAP - o.u.w; xb[i] = x; next = x; }
+    order.forEach((o, i) => { o.u.x = (xf[i] + xb[i]) / 2; });
+    row.length = 0; order.forEach(o => row.push(o.u));
+  };
+  const down = () => gens.slice(1).forEach(g => placeRow(rows.get(g), wantDown));
+  const up = () => gens.slice(0, -1).reverse().forEach(g => placeRow(rows.get(g), wantUp));
+  for (let i = 0; i < 6; i++) { down(); up(); }
+  // put each partner on the side nearest their own parents
+  for (const u of units) if (u.members.length === 2) {
+    const [a, b] = u.members, pa = byId.get(a).parents, pb = byId.get(b).parents, c = center(u);
+    const xa = pa.length ? mean(pa.map(px)) : null, xb = pb.length ? mean(pb.map(px)) : null;
+    if ((xa != null && xb != null && xa > xb) || (xa != null && xb == null && xa > c) || (xb != null && xa == null && xb < c)) u.members.reverse();
+  }
+  down(); up(); down();
+  const minX = Math.min(...units.map(u => u.x));
+  const pos = {};
+  for (const u of units) { u.x -= minX; u.members.forEach((id, i) => pos[id] = { x:u.x + i * (NW + PGAP), y:u.gen * VH }); }
+  const maxX = Math.max(...units.map(u => u.x + u.w));
+  return { pos, unitOf, gens, bounds:{ x:0, y:0, w:maxX, h:(gens[gens.length - 1] || 0) * VH + NH } };
+}
+
+/* ---------- SVG pieces ---------- */
+let clipN = 0;
+function nodeSvg(p, x, y, cls = ''){
+  const sel = ui.selected === p.id;
+  const name = fitText(fullName(p), '600 14.5px Literata, Georgia, serif', NW - 78);
+  const sub = fitText(lifespan(p) || p.birthPlace || '', '12px Figtree, system-ui, sans-serif', NW - 78);
+  const cx = x + 32, cy = y + NH / 2, r = 21;
+  let av;
+  if (p.photo) {
+    const id = 'clip' + (++clipN);
+    av = `<clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath><circle class="av" cx="${cx}" cy="${cy}" r="${r}"/><image href="${esc(p.photo)}" x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/><circle class="ring" cx="${cx}" cy="${cy}" r="${r}"/>`;
+  } else {
+    av = `<circle class="av" cx="${cx}" cy="${cy}" r="${r}"/><text class="av-t" x="${cx}" y="${cy}">${esc(initials(p))}</text>`;
+  }
+  const label = fullName(p) + (lifespan(p) ? ', ' + lifespan(p) : '');
+  return `<g class="node ${gClass(p)}${sel ? ' sel' : ''}${p.deceased ? ' dec' : ''} ${cls}" data-id="${esc(p.id)}" tabindex="0" role="button" aria-label="${esc(label)}">
+<rect class="card" x="${x}" y="${y}" width="${NW}" height="${NH}" rx="12"/>${av}
+<text class="nm" x="${x + 64}" y="${y + (sub ? 28 : 37)}">${esc(name)}</text>${sub ? `<text class="sub" x="${x + 64}" y="${y + 46}">${esc(sub)}</text>` : ''}</g>`;
+}
+function ghostSvg(x, y, role, forId, label){
+  return `<g class="ghost" data-ghost="${role}" data-for="${esc(forId)}" tabindex="0" role="button" aria-label="${esc(label)}"><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="12"/><text class="gh-t" x="${x + NW / 2}" y="${y + NH / 2}">+ ${esc(label.split(' for ')[0])}</text></g>`;
+}
+
+/* ---------- pan / zoom canvas ---------- */
+function mountCanvas(host, inner, bounds, key, pos){
+  host.innerHTML = `<svg class="canvas" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Family diagram. Drag to move, scroll or pinch to zoom."><g class="vp">${inner}</g></svg>`;
+  const svg = host.firstElementChild, vp = svg.firstElementChild;
+  const ctl = { svg, t:null, pos };
+  const apply = () => {
+    const t = ctl.t;
+    vp.setAttribute('transform', `translate(${t.x.toFixed(1)},${t.y.toFixed(1)}) scale(${t.k.toFixed(4)})`);
+    const s = 24 * t.k; svg.style.backgroundSize = `${s}px ${s}px`; svg.style.backgroundPosition = `${t.x}px ${t.y}px`;
+    ui.transforms[key] = { ...t };
+  };
+  ctl.fit = () => {
+    const dw = $('#stage').classList.contains('drawer-open') && innerWidth > 720 ? 380 : 0;
+    const W = (svg.clientWidth || 900) - dw, H = svg.clientHeight || 600, pad = 56, top = 76;
+    const k = clamp(Math.min((W - pad * 2) / (bounds.w || 1), (H - top - pad) / (bounds.h || 1)), 0.15, 1.1);
+    if (k < 0.5) {
+      // too small to read: zoom to a readable level and start at the home person (or the middle)
+      const kk = 0.5, home = pos && (pos[data.meta.homeId] || pos[ui.selected]);
+      const fx = home ? home.x + NW / 2 : bounds.x + bounds.w / 2, fy = home ? home.y + NH / 2 : bounds.y + bounds.h / 2;
+      ctl.t = { k:kk, x:W / 2 - fx * kk, y:top + (H - top) / 2 - fy * kk };
+    } else {
+      ctl.t = { k, x:(W - bounds.w * k) / 2 - bounds.x * k, y:Math.max(top, top + (H - top - pad - bounds.h * k) / 2) - bounds.y * k };
+    }
+    apply();
+  };
+  ctl.zoomAt = (f, cx, cy) => { const t = ctl.t, k = clamp(t.k * f, 0.15, 3), r = k / t.k; t.x = cx - (cx - t.x) * r; t.y = cy - (cy - t.y) * r; t.k = k; apply(); };
+  ctl.zoomBy = f => ctl.zoomAt(f, svg.clientWidth / 2, svg.clientHeight / 2);
+  ctl.centerOn = id => {
+    const p = pos && pos[id]; if (!p) return;
+    const drawerW = document.querySelector('#stage').classList.contains('drawer-open') && innerWidth > 720 ? 380 : 0;
+    ctl.t.x = (svg.clientWidth - drawerW) / 2 - (p.x + NW / 2) * ctl.t.k;
+    ctl.t.y = svg.clientHeight / 2 - (p.y + NH / 2) * ctl.t.k;
+    apply();
+  };
+  if (ui.transforms[key]) { ctl.t = { ...ui.transforms[key] }; apply(); } else ctl.fit();
+
+  const pts = new Map(); let st = null, moved = false, pinch = null, downEl = null;
+  svg.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    pts.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    try { svg.setPointerCapture(e.pointerId); } catch {}
+    if (pts.size === 1) { downEl = e.target.closest('[data-id],[data-ghost]'); st = { x:e.clientX, y:e.clientY, tx:ctl.t.x, ty:ctl.t.y }; moved = false; }
+    else if (pts.size === 2) {
+      const [a, b] = [...pts.values()], r = svg.getBoundingClientRect();
+      pinch = { d:Math.hypot(a.x - b.x, a.y - b.y) || 1, k:ctl.t.k, tx:ctl.t.x, ty:ctl.t.y, cx:(a.x + b.x) / 2 - r.left, cy:(a.y + b.y) / 2 - r.top };
+      moved = true;
+    }
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (pts.size === 2 && pinch) {
+      const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      const k = clamp(pinch.k * d / pinch.d, 0.15, 3), r = k / pinch.k;
+      ctl.t = { k, x:pinch.cx - (pinch.cx - pinch.tx) * r, y:pinch.cy - (pinch.cy - pinch.ty) * r }; apply();
+    } else if (pts.size === 1 && st) {
+      const dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (!moved && Math.hypot(dx, dy) > 5) { moved = true; svg.classList.add('dragging'); }
+      if (moved) { ctl.t.x = st.tx + dx; ctl.t.y = st.ty + dy; apply(); }
+    }
+  });
+  const end = e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.delete(e.pointerId);
+    if (pts.size === 0) {
+      svg.classList.remove('dragging');
+      const el = downEl; const wasClick = !moved && el && e.type === 'pointerup';
+      st = null; pinch = null; downEl = null;
+      if (wasClick) activate(el);
+    } else if (pts.size === 1) { const [p] = [...pts.values()]; st = { x:p.x, y:p.y, tx:ctl.t.x, ty:ctl.t.y }; pinch = null; }
+  };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = svg.getBoundingClientRect();
+    const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    ctl.zoomAt(Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX - r.left, e.clientY - r.top);
+  }, { passive:false });
+  svg.addEventListener('keydown', e => {
+    const el = e.target.closest('[data-id],[data-ghost]');
+    if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); activate(el, true); }
+  });
+  canvas = ctl;
+  return ctl;
+}
+function activate(el, viaKeyboard = false){
+  if (el.dataset.ghost) { quickAdd(el.dataset.ghost, el.dataset.for); return; }
+  select(el.dataset.id, { refocus:viaKeyboard });
+}
+
+/* ---------- rendering ---------- */
+function render(){
+  const title = data.meta.title || 'Our family';
+  $('#familyTitle').textContent = title;
+  document.title = title + ' · family tree';
+  $$('.views button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === ui.view)));
+  const v = $('#view');
+  canvas = null; clipN = 0;
+  if (!data.people.length) { renderWelcome(v); $('#zoomCtl').hidden = true; ui.selected = null; renderDrawer(); return; }
+  if (ui.selected && !byId.has(ui.selected)) ui.selected = null;
+  ({ tree:renderTree, ancestors:renderAncestors, descendants:renderDescendants, timeline:renderTimeline, people:renderPeople })[ui.view](v);
+  $('#zoomCtl').hidden = !canvas;
+  renderDrawer();
+}
+
+function renderWelcome(v){
+  const connected = !!gh?.token;
+  v.innerHTML = `<div class="welcome"><div class="welcome-inner">
+    <svg class="sprig" width="56" height="56" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 24V13M13 13c0-4 3-6.5 7-7-0.5 4-3 7-7 7Zm0 0C13 9 10 6.5 6 6c0.5 4 3 7 7 7Zm0 3.5c-2.5 0-4.5-1.5-5-4m5 4c2.5 0 4.5-1.5 5-4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Start with one person, then grow outwards.</h2>
+    <p>Add yourself or the oldest relative you know, then add parents, partners and children from their profile. ${connected ? 'Changes are saved to your private GitHub repo.' : 'Connect a private GitHub repo to keep the tree safe and reach it from any device.'}</p>
+    <div class="row">
+      <button class="btn primary" data-act="first">Add the first person</button>
+      ${connected ? '' : '<button class="btn" data-act="connect">Connect GitHub storage</button>'}
+      <button class="btn ghost" data-act="sample">Explore a sample family</button>
+    </div>
+  </div></div>`;
+}
+
+function personPickerBar(label, key, focusId){
+  return `<div class="vbar"><label for="pick-${key}">${label}</label><select id="pick-${key}" data-pick="${key}">${personOptions(focusId)}</select></div>`;
+}
+
+function renderTree(v){
+  const L = layoutTree(), pos = L.pos, rel = relatedSet(ui.selected), sel = ui.selected;
+  let edges = '', nodes = '';
+  // partner links
+  const done = new Set();
+  for (const p of data.people) for (const s of p.partners) {
+    const k = [p.id, s].sort().join('|'); if (done.has(k)) continue; done.add(k);
+    const a = pos[p.id], b = pos[s]; if (!a || !b) continue;
+    const [l, r] = a.x <= b.x ? [a, b] : [b, a];
+    const hl = sel && (sel === p.id || sel === s) ? ' hl' : '';
+    if (l.y === r.y && r.x - l.x <= NW + PGAP + 1) edges += `<path class="pedge${hl}" d="M${l.x + NW},${l.y + NH / 2}H${r.x}"/>`;
+    else edges += `<path class="pedge${hl}" d="M${l.x + NW / 2},${l.y}C${l.x + NW / 2},${l.y - 34} ${r.x + NW / 2},${r.y - 34} ${r.x + NW / 2},${r.y}" stroke-dasharray="4 4"/>`;
+  }
+  // parent → child links, grouped by parent couple
+  const fams = new Map();
+  for (const p of data.people) {
+    if (!p.parents.length) continue;
+    const key = [...p.parents].sort().join('|');
+    if (!fams.has(key)) fams.set(key, { ps:p.parents, kids:[] });
+    fams.get(key).kids.push(p.id);
+  }
+  let fi = 0;
+  for (const f of fams.values()) {
+    let sx, sy;
+    if (f.ps.length === 2) {
+      const [a, b] = f.ps.map(q => pos[q]);
+      sx = (a.x + b.x) / 2 + NW / 2;
+      const adjacent = a.y === b.y && Math.abs(a.x - b.x) <= NW + PGAP + 1;
+      sy = adjacent ? a.y + NH / 2 : Math.max(a.y, b.y) + NH;
+    } else { const a = pos[f.ps[0]]; sx = a.x + NW / 2; sy = a.y + NH; }
+    const top = Math.min(...f.kids.map(k => pos[k].y));
+    const bus = top - (VH - NH) / 2 + ((fi++ % 3) - 1) * 7;
+    const kx = f.kids.map(k => pos[k].x + NW / 2);
+    const hl = sel && (f.ps.includes(sel) || f.kids.includes(sel)) ? ' hl' : '';
+    let d = `M${sx},${sy}V${bus}M${Math.min(sx, ...kx)},${bus}H${Math.max(sx, ...kx)}`;
+    f.kids.forEach((k, i) => { d += `M${kx[i]},${bus}V${pos[k].y}`; });
+    edges += `<path class="edge${hl}" d="${d}"/>`;
+  }
+  for (const p of data.people) { const q = pos[p.id]; nodes += nodeSvg(p, q.x, q.y, rel.has(p.id) ? 'rel' : ''); }
+  v.innerHTML = `<div class="vbar"><label for="pick-find">Find</label><select id="pick-find" data-pick="find"><option value="">Choose someone…</option>${personOptions(null)}</select></div><div class="cv"></div>`;
+  mountCanvas($('.cv', v), edges + nodes, L.bounds, 'tree', pos);
+}
+
+function defaultFocus(kind){
+  const valid = id => id && byId.has(id) ? id : null;
+  const byB = [...data.people].sort(byBirth);
+  const dated = byB.filter(p => yearOf(p.birthDate));
+  if (kind === 'ancestors') return valid(ui.focus.ancestors) || valid(data.meta.homeId) || valid(ui.selected) || (dated.length ? dated[dated.length - 1].id : byB[0].id);
+  return valid(ui.focus.descendants) || valid(ui.selected) || (byB.find(p => !p.parents.length) || byB[0]).id;
+}
+
+function renderAncestors(v){
+  const root = defaultFocus('ancestors'); ui.focus.ancestors = root;
+  const MAXD = 7, GHOSTD = 4, nodes = [], edges = [];
+  let leaf = 0;
+  const rank = p => ({ male:0, unknown:1, other:1, female:2 })[p.gender];
+  const lay = (id, d, path) => {
+    const p = byId.get(id), n = { id, d, x:d * AX }, kids = [];
+    nodes.push(n);
+    if (d < MAXD) {
+      const ps = p.parents.filter(q => !path.has(q)).sort((a, b) => rank(byId.get(a)) - rank(byId.get(b)));
+      for (const q of ps) { path.add(q); kids.push(lay(q, d + 1, path)); path.delete(q); }
+      if (p.parents.length < 2 && d + 1 <= GHOSTD) { const g = { ghost:true, forId:id, d:d + 1, x:(d + 1) * AX, y:leaf++ * SH }; nodes.push(g); kids.push(g); }
+    }
+    n.y = kids.length ? (kids[0].y + kids[kids.length - 1].y) / 2 : leaf++ * SH;
+    kids.forEach(k => edges.push([n, k]));
+    return n;
+  };
+  lay(root, 0, new Set([root]));
+  const pos = {}; let svg = '';
+  for (const [a, b] of edges) {
+    const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x, y2 = b.y + NH / 2, mx = x1 + (AX - NW) / 2;
+    svg += `<path class="edge${b.ghost ? '' : ''}" d="M${x1},${y1}H${mx}V${y2}H${x2}"${b.ghost ? ' stroke-dasharray="4 4"' : ''}/>`;
+  }
+  const rel = relatedSet(ui.selected);
+  for (const n of nodes) {
+    if (n.ghost) svg += ghostSvg(n.x, n.y, 'parent', n.forId, 'Add parent for ' + fullName(byId.get(n.forId)));
+    else { svg += nodeSvg(byId.get(n.id), n.x, n.y, rel.has(n.id) ? 'rel' : ''); pos[n.id] = pos[n.id] || { x:n.x, y:n.y }; }
+  }
+  const maxX = Math.max(...nodes.map(n => n.x)) + NW, maxY = Math.max(...nodes.map(n => n.y)) + NH;
+  v.innerHTML = personPickerBar('Ancestors of', 'ancestors', root) + '<div class="cv"></div>';
+  mountCanvas($('.cv', v), svg, { x:0, y:0, w:maxX, h:maxY }, 'ancestors:' + root, pos);
+}
+
+function renderDescendants(v){
+  const root = defaultFocus('descendants'); ui.focus.descendants = root;
+  const MAXD = 9;
+  const measure = (id, d, path) => {
+    const p = byId.get(id), partners = p.partners.filter(s => byId.has(s));
+    const uw = (1 + partners.length) * NW + partners.length * PGAP;
+    const t = { id, d, partners, uw, kids:[] };
+    if (d < MAXD) for (const k of kidsOf.get(id) || []) { if (path.has(k)) continue; path.add(k); t.kids.push(measure(k, d + 1, path)); path.delete(k); }
+    if (d === 0) t.kids.push({ ghost:true, forId:id, d:1, uw:NW, w:NW, kids:[] });
+    const kw = t.kids.reduce((s, c) => s + c.w, 0) + Math.max(0, t.kids.length - 1) * UGAP;
+    t.w = Math.max(uw, kw); t.kw = kw;
+    return t;
+  };
+  const tree = measure(root, 0, new Set([root]));
+  let edges = '', nodes = '', maxY = 0;
+  const pos = {}, rel = relatedSet(ui.selected);
+  const place = (t, left) => {
+    const y = t.d * VH; maxY = Math.max(maxY, y + NH);
+    const ux = left + (t.w - t.uw) / 2;
+    if (t.ghost) { nodes += ghostSvg(ux, y, 'child', t.forId, 'Add child for ' + fullName(byId.get(t.forId))); return { cx:ux + NW / 2, y }; }
+    const p = byId.get(t.id);
+    nodes += nodeSvg(p, ux, y, rel.has(p.id) ? 'rel' : ''); pos[p.id] = pos[p.id] || { x:ux, y };
+    t.partners.forEach((s, i) => {
+      const x = ux + (i + 1) * (NW + PGAP);
+      nodes += nodeSvg(byId.get(s), x, y, rel.has(s) ? 'rel' : ''); pos[s] = pos[s] || { x, y };
+      edges += `<path class="pedge" d="M${x - PGAP},${y + NH / 2}H${x}"/>`;
+    });
+    if (t.kids.length) {
+      const sx = t.partners.length === 1 ? ux + NW + PGAP / 2 : ux + NW / 2;
+      const sy = t.partners.length === 1 ? y + NH / 2 : y + NH;
+      const bus = y + NH + (VH - NH) / 2;
+      let cl = left + (t.w - t.kw) / 2; const xs = [];
+      for (const k of t.kids) { const r = place(k, cl); xs.push(r); cl += k.w + UGAP; }
+      let d = `M${sx},${sy}V${bus}M${Math.min(sx, ...xs.map(r => r.cx))},${bus}H${Math.max(sx, ...xs.map(r => r.cx))}`;
+      xs.forEach(r => { d += `M${r.cx},${bus}V${r.y}`; });
+      edges += `<path class="edge" d="${d}"/>`;
+    }
+    return { cx:ux + NW / 2, y };
+  };
+  place(tree, 0);
+  v.innerHTML = personPickerBar('Descendants of', 'descendants', root) + '<div class="cv"></div>';
+  mountCanvas($('.cv', v), edges + nodes, { x:0, y:0, w:tree.w, h:maxY }, 'descendants:' + root, pos);
+}
+
+function renderTimeline(v){
+  const now = new Date().getFullYear();
+  const dated = data.people.filter(p => yearOf(p.birthDate)).sort(byBirth);
+  const undated = data.people.filter(p => !yearOf(p.birthDate)).sort(byName);
+  if (!dated.length) {
+    v.innerHTML = `<div class="people"><p class="none">Add birth years to see everyone on a timeline. ${undated.length ? 'Nobody has a birth year yet.' : ''}</p></div>`;
+    return;
+  }
+  const PX = 9;
+  const minY = Math.floor((yearOf(dated[0].birthDate) - 4) / 10) * 10;
+  const lastYear = Math.max(now, ...dated.map(p => yearOf(p.deathDate) || 0));
+  const maxY = Math.ceil((lastYear + 4) / 10) * 10;
+  const tw = (maxY - minY) * PX;
+  let ticks = '';
+  for (let y = minY + 10; y <= maxY; y += 10) ticks += `<span style="left:${(y - minY) * PX}px">${y}</span>`;
+  const rows = dated.map(p => {
+    const b = yearOf(p.birthDate), d = yearOf(p.deathDate);
+    const living = !p.deceased, unknownEnd = p.deceased && !d;
+    const end = d || (living ? now : Math.min(now, b + 10));
+    const left = (b - minY) * PX, width = Math.max(18, (end - b) * PX);
+    const label = d ? `${b}–${d}` : living ? `${b}–now` : `${b}–?`;
+    return `<div class="tl-row${ui.selected === p.id ? ' sel' : ''}">
+      <button class="tl-name" data-select="${esc(p.id)}"><b>${esc(fullName(p))}</b></button>
+      <div class="tl-track"><div class="tl-bar ${gClass(p)}${living ? ' living' : ''}${unknownEnd ? ' unknown-end' : ''}" data-select="${esc(p.id)}" style="left:${left}px;width:${width}px" title="${esc(fullName(p) + ', ' + label)}">${width > 70 ? esc(label) : ''}</div></div>
+    </div>`;
+  }).join('');
+  v.innerHTML = `<div class="tl"><div class="tl-grid" style="--tw:${tw}px;--dec:${10 * PX}px">
+    <div class="tl-axis"><div class="corner"></div><div class="tl-ticks">${ticks}</div></div>
+    ${rows}
+    <div class="tl-now" style="left:${210 + (now - minY) * PX}px" title="${now}"></div>
+  </div>
+  ${undated.length ? `<p class="tl-undated">No birth year yet: ${undated.map(p => `<button data-select="${esc(p.id)}">${esc(fullName(p))}</button>`).join(', ')}.</p>` : ''}
+  </div>`;
+}
+
+function renderPeople(v){
+  const q = ui.search.trim().toLowerCase();
+  let list = data.people.filter(p => {
+    if (ui.filter === 'living' && p.deceased) return false;
+    if (ui.filter === 'deceased' && !p.deceased) return false;
+    if (!q) return true;
+    return [fullName(p), p.birthName, p.birthPlace, p.deathPlace, p.occupation, p.notes].join(' ').toLowerCase().includes(q);
+  });
+  list.sort(ui.sort === 'born' ? byBirth : ui.sort === 'first' ? (a, b) => fullName(a).localeCompare(fullName(b)) : byName);
+  const cards = list.map(p => {
+    const bits = [lifespan(p), p.birthPlace].filter(Boolean).join(', ');
+    return `<button class="pcard${ui.selected === p.id ? ' sel' : ''}" data-select="${esc(p.id)}">${avatarHtml(p)}<span class="meta"><b>${esc(fullName(p))}</b><span>${esc(bits || 'No dates yet')}</span>${p.birthName ? `<span>née ${esc(p.birthName)}</span>` : ''}</span></button>`;
+  }).join('');
+  const total = data.people.length;
+  v.innerHTML = `<div class="people">
+    <div class="people-head">
+      <input type="search" id="peopleSearch" placeholder="Search names, places, notes" value="${esc(ui.search)}" aria-label="Search people">
+      <select id="peopleSort" aria-label="Sort"><option value="name">Sort by surname</option><option value="first">Sort by first name</option><option value="born">Sort by birth year</option></select>
+      <select id="peopleFilter" aria-label="Show"><option value="all">Everyone</option><option value="living">Living</option><option value="deceased">Deceased</option></select>
+      <span class="count">${list.length === total ? `${total} ${total === 1 ? 'person' : 'people'}` : `${list.length} of ${total}`}</span>
+    </div>
+    ${cards ? `<div class="cards">${cards}</div>` : '<p class="none">Nobody matches that search.</p>'}
+  </div>`;
+  $('#peopleSort').value = ui.sort; $('#peopleFilter').value = ui.filter;
+}
+
+function renderDrawer(){
+  const d = $('#drawer'), stage = $('#stage');
+  const p = ui.selected && byId.get(ui.selected);
+  if (!p) { d.hidden = true; d.innerHTML = ''; stage.classList.remove('drawer-open'); return; }
+  stage.classList.add('drawer-open');
+  d.hidden = false;
+  const list = ids => ids.map(id => byId.get(id)).filter(Boolean).map(r => `<button class="chip" data-goto="${esc(r.id)}">${avatarHtml(r, 'sm')}<span class="cn">${esc(fullName(r))}</span><small>${esc(lifespan(r))}</small></button>`).join('');
+  const group = (title, ids, emptyText) => `<div><h3>${title}</h3>${ids.length ? `<div class="chips">${list(ids)}</div>` : `<p class="empty-rel">${emptyText}</p>`}</div>`;
+  const kids = kidsOf.get(p.id) || [], sibs = siblingsOf(p.id);
+  const facts = [];
+  if (p.birthDate || p.birthPlace) facts.push(['Born', [prettyDate(p.birthDate), p.birthPlace].filter(Boolean).join(', ')]);
+  if (p.deceased) facts.push(['Died', [prettyDate(p.deathDate), p.deathPlace].filter(Boolean).join(', ') || 'Date not known']);
+  if (p.occupation) facts.push(['Work', p.occupation]);
+  const isHome = data.meta.homeId === p.id;
+  d.innerHTML = `
+    <div class="dr-top">${avatarHtml(p, 'lg')}<button class="btn icon ghost" data-act="close" aria-label="Close details">✕</button></div>
+    <h2 class="dr-name">${esc(fullName(p))}</h2>
+    ${p.birthName && p.birthName !== p.lastName ? `<p class="dr-born">Born ${esc([p.firstName, p.birthName].filter(Boolean).join(' '))}</p>` : ''}
+    ${lifespan(p) ? `<p class="dr-life">${esc(lifespan(p))}</p>` : ''}
+    ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : ''}
+    ${p.notes ? `<div class="notes">${esc(p.notes)}</div>` : ''}
+    <div class="quick">
+      <button class="btn small" data-act="add-parent"${p.parents.length >= 2 ? ' disabled title="Already has two parents"' : ''}>Add parent</button>
+      <button class="btn small" data-act="add-partner">Add partner</button>
+      <button class="btn small" data-act="add-child">Add child</button>
+      <button class="btn small" data-act="add-sibling"${p.parents.length ? '' : ' disabled title="Add a parent first so siblings can be linked"'}>Add sibling</button>
+    </div>
+    <div class="rels">
+      ${group('Parents', p.parents, 'None added yet.')}
+      ${group(p.partners.length === 1 ? 'Partner' : 'Partners', p.partners, 'None added yet.')}
+      ${group('Children', kids, 'None added yet.')}
+      ${sibs.length ? group('Siblings', sibs, '') : ''}
+    </div>
+    <div class="dr-actions">
+      <button class="btn primary small" data-act="edit">Edit details</button>
+      <button class="btn small" data-act="show-ancestors">Show ancestors</button>
+      <button class="btn small" data-act="show-descendants">Show descendants</button>
+      <button class="btn small ghost" data-act="home" aria-pressed="${isHome}">${isHome ? 'Home person ✓' : 'Make home person'}</button>
+      <button class="btn small danger" data-act="delete">Delete</button>
+    </div>`;
+}
+
+/* ---------- interactions ---------- */
+function setView(view, opts = {}){
+  if (!VIEWS.includes(view)) view = 'tree';
+  ui.view = view;
+  if (location.hash.slice(1) !== view) history.replaceState(null, '', '#' + view);
+  saveUi(); render();
+  if (opts.center && canvas) canvas.centerOn(opts.center);
+}
+function select(id, opts = {}){
+  ui.selected = id && byId.has(id) ? id : null;
+  render();
+  if (opts.center && canvas) canvas.centerOn(id);
+  if (opts.refocus && id) { const el = document.querySelector(`#view [data-id="${CSS.escape(id)}"]`); el?.focus({ preventScroll:true }); }
+}
+function saveUi(){ store.set(LS.ui, JSON.stringify({ view:ui.view, theme:ui.theme })); }
+
+$('.views').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b) setView(b.dataset.view); });
+$('.views').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const i = VIEWS.indexOf(ui.view), n = VIEWS[(i + (e.key === 'ArrowRight' ? 1 : VIEWS.length - 1)) % VIEWS.length];
+  setView(n); $(`.views button[data-view="${n}"]`).focus();
+});
+
+$('#view').addEventListener('click', e => {
+  const s = e.target.closest('[data-select]'); if (s) { select(s.dataset.select); return; }
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  if (a.dataset.act === 'first') openPersonDialog(null);
+  if (a.dataset.act === 'connect') openSettings();
+  if (a.dataset.act === 'sample') loadSample();
+});
+$('#view').addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.pick === 'find') { if (t.value) select(t.value, { center:true }); }
+  else if (t.dataset.pick === 'ancestors' || t.dataset.pick === 'descendants') { ui.focus[t.dataset.pick] = t.value; render(); }
+  else if (t.id === 'peopleSort') { ui.sort = t.value; render(); }
+  else if (t.id === 'peopleFilter') { ui.filter = t.value; render(); }
+});
+$('#view').addEventListener('input', e => {
+  if (e.target.id !== 'peopleSearch') return;
+  ui.search = e.target.value; const pos = e.target.selectionStart;
+  render(); const s = $('#peopleSearch'); s.focus(); try { s.setSelectionRange(pos, pos); } catch {}
+});
+
+$('#zoomCtl').addEventListener('click', e => {
+  const b = e.target.closest('[data-zoom]'); if (!b || !canvas) return;
+  if (b.dataset.zoom === 'in') canvas.zoomBy(1.25);
+  else if (b.dataset.zoom === 'out') canvas.zoomBy(0.8);
+  else canvas.fit();
+});
+
+$('#drawer').addEventListener('click', async e => {
+  const g = e.target.closest('[data-goto]');
+  if (g) { select(g.dataset.goto, { center:true }); return; }
+  const a = e.target.closest('[data-act]'); if (!a || a.disabled) return;
+  const p = byId.get(ui.selected); if (!p) return;
+  switch (a.dataset.act) {
+    case 'close': select(null); break;
+    case 'edit': openPersonDialog(p); break;
+    case 'add-parent': case 'add-partner': case 'add-child': case 'add-sibling': quickAdd(a.dataset.act.slice(4), p.id); break;
+    case 'show-ancestors': ui.focus.ancestors = p.id; setView('ancestors'); break;
+    case 'show-descendants': ui.focus.descendants = p.id; setView('descendants'); break;
+    case 'home': data.meta.homeId = data.meta.homeId === p.id ? null : p.id; commit(); break;
+    case 'delete': {
+      const n = new Set([...p.parents, ...p.partners, ...(kidsOf.get(p.id) || [])]).size;
+      const ok = await ask(`Delete ${fullName(p)}?`, `They’ll be removed from the tree${n ? `, along with their links to ${n} ${n === 1 ? 'relative' : 'relatives'}` : ''}. The relatives themselves stay.`, [{ label:'Cancel', value:false }, { label:'Delete person', value:true, kind:'danger' }]);
+      if (ok) deletePerson(p.id);
+      break;
+    }
+  }
+});
+
+function deletePerson(id){
+  data.people = data.people.filter(p => p.id !== id);
+  for (const p of data.people) { p.parents = p.parents.filter(x => x !== id); p.partners = p.partners.filter(x => x !== id); }
+  if (data.meta.homeId === id) data.meta.homeId = null;
+  for (const k in ui.focus) if (ui.focus[k] === id) ui.focus[k] = null;
+  ui.selected = null;
+  commit();
+  toast('Person deleted.');
+}
+
+function quickAdd(role, forId){
+  const x = byId.get(forId); if (!x) return;
+  const preset = {};
+  if (role === 'parent') { if (x.parents.length >= 2) return toast('They already have two parents.'); preset.children = [x.id]; if (x.parents.length === 1) preset.partners = [x.parents[0]]; preset.heading = `Add a parent of ${fullName(x)}`; }
+  if (role === 'partner') { preset.partners = [x.id]; preset.heading = `Add a partner of ${fullName(x)}`; }
+  if (role === 'child') { preset.parents = [x.id, ...(x.partners.length === 1 ? [x.partners[0]] : [])]; preset.lastName = x.lastName; preset.heading = `Add a child of ${fullName(x)}`; }
+  if (role === 'sibling') { if (!x.parents.length) return toast('Add a parent first so siblings can be linked.'); preset.parents = [...x.parents]; preset.lastName = x.birthName || x.lastName; preset.heading = `Add a sibling of ${fullName(x)}`; }
+  openPersonDialog(null, preset);
+}
+
+/* ---------- person dialog ---------- */
+let draft = null;
+const pform = $('#personForm');
+function openPersonDialog(p, preset = {}){
+  draft = p
+    ? { id:p.id, photo:p.photo, parents:[...p.parents], partners:[...p.partners], children:[...(kidsOf.get(p.id) || [])] }
+    : { id:null, photo:'', parents:preset.parents || [], partners:preset.partners || [], children:preset.children || [] };
+  const src = p || { firstName:'', lastName:preset.lastName || '', birthName:'', gender:'unknown', birthDate:'', birthPlace:'', deathDate:'', deathPlace:'', deceased:false, occupation:'', notes:'' };
+  for (const k of ['firstName','lastName','birthName','birthDate','birthPlace','deathDate','deathPlace','occupation','notes']) pform.elements[k].value = src[k] || '';
+  pform.elements.deceased.checked = !!src.deceased;
+  $$('input[name="gender"]', pform).forEach(r => r.checked = r.value === (src.gender || 'unknown'));
+  $('#pdTitle').textContent = p ? `Edit ${fullName(p)}` : (preset.heading || 'Add person');
+  $('#pdErr').textContent = '';
+  syncDeathRow(); renderPhotoPreview(); renderRelPickers();
+  $('#personDlg').showModal();
+  pform.elements.firstName.focus();
+}
+function syncDeathRow(){ $('#deathRow').hidden = !pform.elements.deceased.checked; }
+pform.elements.deceased.addEventListener('change', syncDeathRow);
+function renderPhotoPreview(){
+  const fake = { firstName:pform.elements.firstName.value, lastName:pform.elements.lastName.value, gender:(pform.elements.gender.value || 'unknown'), photo:draft.photo };
+  $('#photoPreview').innerHTML = avatarHtml(fake, 'lg');
+  $('#photoRemove').hidden = !draft.photo;
+}
+pform.elements.firstName.addEventListener('input', () => { if (!draft.photo) renderPhotoPreview(); });
+pform.elements.lastName.addEventListener('input', () => { if (!draft.photo) renderPhotoPreview(); });
+$$('input[name="gender"]', pform).forEach(r => r.addEventListener('change', renderPhotoPreview));
+$('#photoPick').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#photoInput').click(); } });
+$('#photoInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { draft.photo = await resizeImage(f, 200); renderPhotoPreview(); }
+  catch (err) { $('#pdErr').textContent = err.message; }
+});
+$('#photoRemove').addEventListener('click', () => { draft.photo = ''; renderPhotoPreview(); });
+function resizeImage(file, size){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(w, h);
+      const sx = (w - s) / 2, sy = h > w ? (h - s) * 0.3 : 0;
+      const c = document.createElement('canvas'); c.width = c.height = size;
+      const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('That file couldn’t be opened as an image. Try a JPG or PNG.')); };
+    img.src = url;
+  });
+}
+
+const REL = {
+  parents:{ title:'Parents', add:'Add a parent…', max:2, full:'Two parents added.' },
+  partners:{ title:'Partners', add:'Add a partner…' },
+  children:{ title:'Children', add:'Add a child…' }
+};
+function renderRelPickers(){
+  const anc = ancestorsOf(draft.parents), desc = descendantsOf(draft.children);
+  for (const kind of Object.keys(REL)) {
+    const cfg = REL[kind], ids = draft[kind], box = $('#rel-' + kind);
+    const tags = ids.map(id => byId.get(id)).filter(Boolean).map(r => `<span class="tag">${esc(fullName(r))}<button type="button" data-rm="${kind}" data-id="${esc(r.id)}" aria-label="Remove ${esc(fullName(r))}">×</button></span>`).join('');
+    let picker = '';
+    if (cfg.max && ids.length >= cfg.max) picker = `<p class="hint" style="margin:0">${cfg.full}</p>`;
+    else {
+      const opts = sortedPeople().filter(p => {
+        if (p.id === draft.id || ids.includes(p.id)) return false;
+        if (kind === 'parents') return !desc.has(p.id) && !draft.children.includes(p.id);
+        if (kind === 'children') return !anc.has(p.id) && !draft.parents.includes(p.id);
+        return true;
+      }).map(p => {
+        const full = kind === 'children' && p.parents.length >= 2 && !(draft.id && p.parents.includes(draft.id));
+        return `<option value="${esc(p.id)}"${full ? ' disabled' : ''}>${esc(fullName(p))}${lifespan(p) ? ' (' + esc(lifespan(p)) + ')' : ''}${full ? ' – has two parents' : ''}</option>`;
+      }).join('');
+      picker = opts ? `<select data-addrel="${kind}" aria-label="${cfg.add}"><option value="">${cfg.add}</option>${opts}</select>` : '';
+    }
+    box.innerHTML = `<span class="legend">${cfg.title}</span>${tags ? `<div class="sel-list">${tags}</div>` : ''}${picker}`;
+  }
+}
+pform.addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]');
+  if (rm) { draft[rm.dataset.rm] = draft[rm.dataset.rm].filter(x => x !== rm.dataset.id); renderRelPickers(); }
+  if (e.target.closest('[data-close]')) $('#personDlg').close();
+});
+pform.addEventListener('change', e => {
+  const s = e.target.closest('[data-addrel]');
+  if (s && s.value) { draft[s.dataset.addrel].push(s.value); renderRelPickers(); $(`[data-addrel="${s.dataset.addrel}"]`, pform)?.focus(); }
+});
+pform.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = pform.elements, val = k => f[k].value.trim();
+  if (!val('firstName') && !val('lastName')) { $('#pdErr').textContent = 'Add a first or last name.'; f.firstName.focus(); return; }
+  for (const k of ['birthDate', 'deathDate']) if (val(k) && !yearOf(val(k))) { $('#pdErr').textContent = 'Dates need a four-digit year, e.g. 1948 or 1948-06-14.'; f[k].focus(); return; }
+  const isNew = !draft.id;
+  let p = isNew ? { id:uid(), parents:[], partners:[] } : byId.get(draft.id);
+  if (!p) return $('#personDlg').close();
+  Object.assign(p, {
+    firstName:val('firstName'), lastName:val('lastName'), birthName:val('birthName'),
+    gender:f.gender.value || 'unknown', birthDate:val('birthDate'), birthPlace:val('birthPlace'),
+    deceased:f.deceased.checked, deathDate:f.deceased.checked ? val('deathDate') : '', deathPlace:f.deceased.checked ? val('deathPlace') : '',
+    occupation:val('occupation'), notes:f.notes.value.trim(), photo:draft.photo || ''
+  });
+  if (isNew) data.people.push(p);
+  p.parents = draft.parents.slice(0, 2);
+  const oldPartners = new Set(p.partners), newPartners = new Set(draft.partners);
+  for (const s of oldPartners) if (!newPartners.has(s)) { const o = byId.get(s); if (o) o.partners = o.partners.filter(x => x !== p.id); }
+  for (const s of newPartners) { const o = byId.get(s); if (o && !o.partners.includes(p.id)) o.partners.push(p.id); }
+  p.partners = [...newPartners];
+  const oldKids = isNew ? [] : (kidsOf.get(p.id) || []);
+  for (const k of oldKids) if (!draft.children.includes(k)) { const c = byId.get(k); if (c) c.parents = c.parents.filter(x => x !== p.id); }
+  for (const k of draft.children) { const c = byId.get(k); if (c && !c.parents.includes(p.id) && c.parents.length < 2) c.parents.push(p.id); }
+  ui.selected = p.id;
+  $('#personDlg').close();
+  commit();
+  if (canvas) canvas.centerOn(p.id);
+  toast(isNew ? `${fullName(p)} added.` : 'Changes saved.');
+});
+
+/* ---------- settings ---------- */
+const sform = $('#settingsForm');
+function openSettings(){
+  sform.elements.title.value = data.meta.title || '';
+  sform.elements.theme.value = ui.theme;
+  const c = gh || {};
+  sform.elements.owner.value = c.owner || '';
+  sform.elements.repo.value = c.repo || 'family-tree-data';
+  sform.elements.branch.value = c.branch || 'main';
+  sform.elements.path.value = c.path || 'family.json';
+  sform.elements.token.value = c.token || '';
+  sform.elements.autosave.checked = c.autosave !== false;
+  $('#stErr').textContent = '';
+  renderStorageState();
+  $('#settingsDlg').showModal();
+}
+function renderStorageState(){
+  $('#storageState').innerHTML = gh?.token
+    ? `Connected to <b>${esc(gh.owner)}/${esc(gh.repo)}</b>, file <span class="mono">${esc(gh.path)}</span> on <span class="mono">${esc(gh.branch)}</span>.`
+    : 'Saved in this browser only. Connect GitHub to keep it safe and use it on other devices.';
+  $('#ghDisconnect').hidden = !gh?.token;
+  $('#ghConnect').textContent = gh?.token ? 'Reconnect and reload' : 'Connect and load';
+}
+sform.elements.theme.addEventListener('change', e => applyTheme(e.target.value));
+sform.elements.autosave.addEventListener('change', e => { if (gh) { gh.autosave = e.target.checked; store.set(LS.gh, JSON.stringify(gh)); } });
+sform.addEventListener('click', e => { if (e.target.closest('[data-close]')) $('#settingsDlg').close(); });
+sform.addEventListener('submit', e => {
+  e.preventDefault();
+  const t = sform.elements.title.value.trim() || 'Our family';
+  if (t !== data.meta.title) { data.meta.title = t; commit(); }
+  $('#settingsDlg').close();
+});
+$('#ghConnect').addEventListener('click', async () => {
+  const f = sform.elements, err = $('#stErr');
+  const c = { owner:f.owner.value.trim(), repo:f.repo.value.trim(), branch:f.branch.value.trim() || 'main', path:(f.path.value.trim() || 'family.json').replace(/^\/+/, ''), token:f.token.value.trim(), autosave:f.autosave.checked };
+  if (!c.owner || !c.repo || !c.token) { err.textContent = 'Fill in your username, the repo name and the token.'; return; }
+  err.textContent = ''; const btn = $('#ghConnect'); btn.disabled = true; btn.textContent = 'Connecting…';
+  try {
+    const res = await ghFetch(c);
+    gh = c; store.set(LS.gh, JSON.stringify(gh)); syncError = null;
+    if (res.data) {
+      let useRemote = true;
+      if (data.people.length && JSON.stringify(res.data.people) !== JSON.stringify(data.people)) {
+        const ch = await ask('Which version should we keep?', `GitHub already has a tree with ${res.data.people.length} ${res.data.people.length === 1 ? 'person' : 'people'}. This browser has ${data.people.length}.`, [{ label:'Keep this browser’s and save it', value:'local' }, { label:'Load from GitHub', value:'remote', kind:'primary' }]);
+        useRemote = ch !== 'local';
+      }
+      ghSha = res.sha;
+      if (useRemote) { data = res.data; dirty = false; lastSaved = new Date(); persistLocal(); reindex(); ui.selected = null; render(); toast(`Loaded ${data.people.length} ${data.people.length === 1 ? 'person' : 'people'} from GitHub.`); }
+      else { dirty = true; rev++; persistLocal(); await ghSave(); }
+    } else {
+      ghSha = null;
+      if (data.people.length) { dirty = true; rev++; persistLocal(); await ghSave(); toast('Connected. Your tree is now saved in the repo.'); }
+      else { dirty = false; persistLocal(); toast('Connected. The file will be created when you add someone.'); }
+    }
+    updateStatus(); renderStorageState();
+  } catch (e) { err.textContent = e.message; }
+  finally { btn.disabled = false; renderStorageState(); }
+});
+$('#ghDisconnect').addEventListener('click', async () => {
+  const unsaved = dirty ? '\n\nThere are changes here that haven’t been saved to GitHub yet. Download a backup first if you want to keep them.' : '';
+  const ok = await ask('Sign out on this device?', 'This removes the token and the copy of your tree from this browser. Everything saved in your GitHub repo stays there.' + unsaved, [{ label:'Cancel', value:false }, { label:'Sign out', value:true, kind:'danger' }]);
+  if (!ok) return;
+  clearTimeout(saveTimer);
+  gh = null; ghSha = null; dirty = false; syncError = null; lastSaved = null;
+  [LS.gh, LS.data, LS.dirty, LS.sha].forEach(k => store.del(k));
+  data = emptyData(); ui.selected = null; ui.transforms = {}; reindex(); render(); updateStatus(); renderStorageState();
+  $('#settingsDlg').close();
+});
+
+function applyTheme(t){
+  ui.theme = t;
+  if (t === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+  saveUi();
+}
+
+/* ---------- menu, import / export, sample ---------- */
+const menu = $('#menu'), menuBtn = $('#menuBtn');
+function closeMenu(){ menu.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); }
+menuBtn.addEventListener('click', () => { const open = menu.hidden; menu.hidden = !open; menuBtn.setAttribute('aria-expanded', String(open)); if (open) menu.querySelector('button').focus(); });
+document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('#menu,#menuBtn')) closeMenu(); });
+menu.addEventListener('keydown', e => {
+  const items = $$('button', menu), i = items.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  if (e.key === 'Escape') { closeMenu(); menuBtn.focus(); }
+});
+menu.addEventListener('click', e => {
+  const b = e.target.closest('[data-menu]'); if (!b) return; closeMenu();
+  if (b.dataset.menu === 'settings') openSettings();
+  if (b.dataset.menu === 'export') exportJson();
+  if (b.dataset.menu === 'import') $('#importFile').click();
+  if (b.dataset.menu === 'sample') loadSample();
+  if (b.dataset.menu === 'print') window.print();
+});
+function exportJson(){
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `family-tree-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$('#importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = normalise(JSON.parse(await f.text()));
+    if (data.people.length) {
+      const ok = await ask('Replace the current tree?', `The backup has ${d.people.length} ${d.people.length === 1 ? 'person' : 'people'}. It will replace the ${data.people.length} here.`, [{ label:'Cancel', value:false }, { label:'Replace tree', value:true, kind:'primary' }]);
+      if (!ok) return;
+    }
+    data = d; ui.selected = null; ui.transforms = {}; commit(); toast('Backup imported.');
+  } catch (err) { toast(err.message || 'That file couldn’t be read.', true); }
+});
+async function loadSample(){
+  if (data.people.length) {
+    const ok = await ask('Load the sample family?', `This replaces the ${data.people.length} ${data.people.length === 1 ? 'person' : 'people'} in your tree${gh?.token ? (gh.autosave ? ', and will be saved to GitHub' : '') : ''}. Download a backup first if you want to keep them.`, [{ label:'Cancel', value:false }, { label:'Load sample', value:true, kind:'danger' }]);
+    if (!ok) return;
+  }
+  data = normalise(sampleData()); ui.selected = null; ui.transforms = {}; ui.focus = {}; commit();
+}
+function sampleData(){
+  const P = (id, f, l, g, b, bp, d, dp, x = {}) => ({ id, firstName:f, lastName:l, gender:g, birthDate:b, birthPlace:bp, deathDate:d || '', deathPlace:dp || '', deceased:!!d, ...x });
+  return { meta:{ title:'The Hale family', homeId:'maya' }, people:[
+    P('walter','Walter','Hale','male','1921-04-02','Plymouth','1994-11-20','Plymouth',{ occupation:'Shipwright', partners:['margaret'], notes:'Worked in the dockyard for forty years. Met Margaret at a dance on the Hoe in 1946.' }),
+    P('margaret','Margaret','Hale','female','1924','Bristol','2010-02-08','Plymouth',{ birthName:'Price', occupation:'Seamstress', partners:['walter'] }),
+    P('arthur','Arthur','Bell','male','1919','Cardiff','1980','Cardiff',{ occupation:'Railway signalman', partners:['edith'] }),
+    P('edith','Edith','Bell','female','1923','Swansea','2001','Cardiff',{ birthName:'Morgan', partners:['arthur'] }),
+    P('peter','Peter','Hale','male','1948-06-14','Plymouth','','',{ parents:['walter','margaret'], partners:['jean'], occupation:'Civil engineer' }),
+    P('susan','Susan','Clarke','female','1951','Plymouth','','',{ birthName:'Hale', parents:['walter','margaret'], partners:['david'], occupation:'Teacher' }),
+    P('david','David','Clarke','male','1949','Leicester','2019','Exeter',{ partners:['susan'] }),
+    P('jean','Jean','Hale','female','1950-09-03','Cardiff','','',{ birthName:'Bell', parents:['arthur','edith'], partners:['peter'], occupation:'Nurse' }),
+    P('robert','Robert','Bell','male','1953','Cardiff','','',{ parents:['arthur','edith'] }),
+    P('daniel','Daniel','Hale','male','1976-01-22','Exeter','','',{ parents:['peter','jean'], partners:['priya'] }),
+    P('claire','Claire','Okafor','female','1979','Exeter','','',{ birthName:'Hale', parents:['peter','jean'], partners:['sam'] }),
+    P('tom','Tom','Clarke','male','1980','Exeter','','',{ parents:['david','susan'] }),
+    P('priya','Priya','Hale','female','1978','Leicester','','',{ birthName:'Shah', partners:['daniel'] }),
+    P('sam','Sam','Okafor','male','1977','London','','',{ partners:['claire'] }),
+    P('maya','Maya','Hale','female','2008','Bristol','','',{ parents:['daniel','priya'] }),
+    P('leo','Leo','Hale','male','2011','Bristol','','',{ parents:['daniel','priya'] }),
+    P('ada','Ada','Okafor','female','2013','London','','',{ parents:['claire','sam'] })
+  ] };
+}
+
+/* ---------- dialogs & toast ---------- */
+function ask(title, body, buttons){
+  return new Promise(resolve => {
+    const dlg = $('#askDlg');
+    $('#askTitle').textContent = title; $('#askBody').textContent = body;
+    const box = $('#askBtns'); box.innerHTML = '';
+    let result = null;
+    buttons.forEach((b, i) => {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'btn' + (b.kind ? ' ' + b.kind : ''); el.textContent = b.label;
+      el.addEventListener('click', () => { result = b.value; dlg.close(); });
+      box.appendChild(el);
+      if (i === buttons.length - 1) setTimeout(() => el.focus(), 0);
+    });
+    dlg.addEventListener('close', () => resolve(result), { once:true });
+    dlg.showModal();
+  });
+}
+let toastTimer;
+function toast(msg, isError = false){
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast' + (isError ? ' error' : ''); t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, isError ? 6000 : 3200);
+}
+
+/* ---------- global wiring ---------- */
+$('#addBtn').addEventListener('click', () => openPersonDialog(null));
+$('#saveBtn').addEventListener('click', () => ghSave());
+$('#syncStatus').addEventListener('click', openSettings);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.querySelector('dialog[open]') && menu.hidden && ui.selected) select(null);
+});
+window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (VIEWS.includes(v) && v !== ui.view) setView(v); });
+window.addEventListener('beforeunload', e => { if (gh?.token && dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- start ---------- */
+function boot(){
+  const u = readJSON(LS.ui) || {};
+  applyTheme(['light','dark','system'].includes(u.theme) ? u.theme : 'system');
+  const h = location.hash.slice(1);
+  ui.view = VIEWS.includes(h) ? h : VIEWS.includes(u.view) ? u.view : 'tree';
+  gh = readJSON(LS.gh);
+  if (gh && !gh.token) gh = null;
+  if (gh && gh.autosave === undefined) gh.autosave = true;
+  dirty = store.get(LS.dirty) === '1';
+  ghSha = store.get(LS.sha) || null;
+  const cached = readJSON(LS.data);
+  if (cached) { try { data = normalise(cached); } catch { data = emptyData(); } }
+  reindex(); render(); updateStatus();
+  if (gh) {
+    if (dirty) { toast('Some changes here haven’t been saved to GitHub yet.'); updateStatus(); }
+    else ghLoad();
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (canvas) render(); });
+}
+boot();
+})();
+</script>
+</body>
+</html>
